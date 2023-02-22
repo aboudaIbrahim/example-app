@@ -16,7 +16,8 @@ class TodoRepository
     public function index()
     {
         try {
-            $todos = Todo::all();
+            $todosPerPage = 2 ;
+            $todos = Todo::orderBy('created_at' , 'desc')->paginate($todosPerPage);
         } catch (\Exception $exception) {
             return $this->failedRequest($exception->getMessage(), $exception->getCode());
         }
