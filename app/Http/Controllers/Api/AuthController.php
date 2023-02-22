@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\SignUpRequest;
+use App\Http\Requests\TodoRequest;
 use App\Repositories\AuthRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -17,24 +18,18 @@ class AuthController extends Controller
         $this->authRepository = $authRepository;
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
-
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $loginFields = $request;
-        return $this->authRepository->login($loginFields);
+        return $this->authRepository->login($request);
     }
-
-    public function register(Request $request)
+    public function register(SignUpRequest $request)
     {
-        $userFields = $request;
-        return $this->authRepository->register($userFields);
+        return $this->authRepository->register($request);
     }
-
     public function logout()
     {
         return $this->authRepository->logout();
     }
-
     public function refresh()
     {
         return $this->authRepository->refresh();

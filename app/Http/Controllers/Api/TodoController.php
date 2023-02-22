@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\TodoRequest;
 use App\Repositories\TodoRepository;
 use Illuminate\Http\Request;
 
 
-class TodoController extends Controller
+class
+TodoController extends Controller
 {
     private TodoRepository $todoRepository;
 
@@ -16,15 +18,16 @@ class TodoController extends Controller
         $this->middleware('auth:api');
     }
 
+
     public function index()
     {
+        //dd(Route::currentRouteName());
         return $this->todoRepository->index();
     }
 
-    public function store(Request $request)
+    public function store(TodoRequest $request)
     {
-        $todoFields = $request;
-        return $this->todoRepository->store($todoFields);
+        return $this->todoRepository->store($request);
     }
 
     public function show($id)
@@ -32,10 +35,9 @@ class TodoController extends Controller
         return $this->todoRepository->show($id);
     }
 
-    public function update(Request $request, $id)
+    public function update(TodoRequest $request, $id)
     {
-        $updatedFields = $request;
-        return $this->todoRepository->update($updatedFields, $id);
+        return $this->todoRepository->update($request, $id);
     }
 
     public function destroy($id)

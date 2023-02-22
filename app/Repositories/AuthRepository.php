@@ -2,6 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\SignUpRequest;
+use App\Http\Requests\TodoRequest;
 use App\Models\User;
 use http\Exception;
 use Illuminate\Support\Facades\Auth;
@@ -13,42 +16,33 @@ class AuthRepository
 {
     use JsonResponseTrait;
 
-    public function register($userFields)
+    /**
+     * @param $userFields
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register(SignUpRequest $userFields)
     {
         try {
-            $validator = Validator::Make($userFields->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:6'
-            ]);
-            if ($validator->fails()) {
-                return $this->failedRequest('something wrong with the entered data', 400, $validator->errors());
-            }
             $user = User::create([
-                'name' => $userFields->name,
-                'email' => $userFields->email,
-                'password' => Hash::make($userFields->password),
+                'name' => $userFields->input('name'),
+                'email' => $userFields->input('email'),
+                'password' => Hash::make($userFields->input('password')),
             ]);
             $token = Auth::login($user);
-
             $data = [$user, $token];
-
-        } catch (Exception $e) {
-            return $this->failedRequest($e->getMessage(), $e->getCode());
+            return $this->successRequest('User created Successfully', 200, $data);
+        } catch (\Exception $exception) {
+            return $this->failedRequest($exception->getMessage(), $exception->getCode());
         }
-        return $this->successRequest('User created Successfully', 200, $data);
     }
 
-    public function login($loginFields)
+    /**
+     * @param $loginFields
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function login(LoginRequest $loginFields)
     {
         try {
-            $validator = Validator::make($loginFields->all(), [
-                'email' => 'required|string|email',
-                'password' => 'required|string',
-            ]);
-            if ($validator->fails()) {
-                return $this->failedRequest('invalid inputs', 400, $validator->errors());
-            }
             $credentials = $loginFields->only('email', 'password');
             $token = Auth::attempt($credentials);
             if (!$token) {
@@ -56,30 +50,36 @@ class AuthRepository
             }
             $user = Auth::user();
             $data = [$user, $token];
-        } catch (Exception $e) {
-            return $this->failedRequest($e->getMessage(), $e->getCode());
+        } catch (Exception $exception) {
+            return $this->failedRequest($exception->getMessage(), $exception->getCode());
         }
         return $this->successRequest('logged in successfully', 200, $data);
     }
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout()
     {
         try {
             Auth::logout();
-        } catch (\Exception $e) {
-            return $this->failedRequest($e->getMessage(), $e->getCode());
+        } catch (\Exception $exception) {
+            return $this->failedRequest($exception->getMessage(), $exception->getCode());
         }
         return $this->successRequest('logged out successfully', 200);
     }
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function refresh()
     {
         try {
             $token = Auth::refresh();
             $user = Auth::user();
             $data = [$user, $token];
-        } catch (\Exception $e) {
-            return $this->failedRequest($e->getMessage(), $e->getCode());
+        } catch (\Exception $exception) {
+            return $this->failedRequest($exception->getMessage(), $exception->getCode());
         }
         return $this->successRequest('token refreshed ', 200, $data);
     }
